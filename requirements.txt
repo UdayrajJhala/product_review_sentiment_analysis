@@ -3,3 +3,6 @@ oauth2client
 kafka-python
 pandas
 python-dotenv
+pymongo
+numpy
+scikit-learn
