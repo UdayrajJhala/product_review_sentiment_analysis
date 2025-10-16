@@ -6,3 +6,4 @@ python-dotenv
 pymongo
 numpy
 scikit-learn
+flask

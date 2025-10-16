@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Review Sentiment Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .control-group select {
+            flex: 1;
+            min-width: 250px;
+            padding: 12px 20px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .control-group select:hover {
+            border-color: #667eea;
+        }
+
+        .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-container {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card.positive {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .stat-card.negative {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+
+        .stat-card.neutral {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        }
+
+        .stat-card.status-success {
+            background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%);
+        }
+
+        .stat-card.status-failure {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .percentage {
+            font-size: 1em;
+            opacity: 0.9;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .status-badge.success {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .status-badge.failure {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .reviews-section {
+            padding: 30px;
+        }
+
+        .reviews-section h2 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .reviews-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .review-card {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .review-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .review-card.positive {
+            border-left-color: #28a745;
+        }
+
+        .review-card.negative {
+            border-left-color: #dc3545;
+        }
+
+        .review-card.neutral {
+            border-left-color: #ffc107;
+        }
+
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .review-header h3 {
+            color: #212529;
+            font-size: 1.2em;
+        }
+
+        .sentiment-badge {
+            padding: 6px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sentiment-badge.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .sentiment-badge.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .sentiment-badge.neutral {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .review-details {
+            display: grid;
+            gap: 10px;
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .review-details div {
+            display: flex;
+            gap: 8px;
+        }
+
+        .review-details strong {
+            color: #212529;
+            min-width: 100px;
+        }
+
+        .review-summary {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            font-style: italic;
+            color: #495057;
+            margin-top: 10px;
+        }
+
+        .confidence-bar {
+            margin-top: 10px;
+        }
+
+        .confidence-bar-label {
+            font-size: 0.9em;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .confidence-bar-fill {
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .confidence-bar-fill div {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 1.2em;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #6c757d;
+            font-size: 1.2em;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .star-rating {
+            color: #ffc107;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-group select {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Product Review Sentiment Dashboard</h1>
+            <p>Real-time sentiment analysis and product performance tracking</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="productSelect">🔍 Select Product:</label>
+                <select id="productSelect">
+                    <option value="">All Products</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-container" id="statsContainer">
+            <div class="loading">Loading statistics...</div>
+        </div>
+
+        <div class="reviews-section">
+            <h2 id="reviewsTitle">Recent Reviews</h2>
+            <div class="reviews-grid" id="reviewsGrid">
+                <div class="loading">Loading reviews...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProduct = '';
+
+        // Load products on page load
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                const data = await response.json();
+
+                const select = document.getElementById('productSelect');
+
+                data.products.forEach(product => {
+                    const option = document.createElement('option');
+                    option.value = product;
+                    option.textContent = product;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error loading products:', error);
+            }
+        }
+
+        // Load reviews based on selected product
+        async function loadReviews(product = '') {
+            try {
+                const url = product ? `/api/reviews?product=${encodeURIComponent(product)}` : '/api/reviews';
+                const response = await fetch(url);
+                const data = await response.json();
+
+                displayStatistics(data.statistics, product);
+                displayReviews(data.reviews);
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                document.getElementById('statsContainer').innerHTML = '<div class="no-data">Error loading data</div>';
+                document.getElementById('reviewsGrid').innerHTML = '<div class="no-data">Error loading reviews</div>';
+            }
+        }
+
+        // Display statistics
+        function displayStatistics(stats, product) {
+            const container = document.getElementById('statsContainer');
+            const productTitle = product ? `for ${product}` : '(All Products)';
+
+            const statusClass = stats.status === 'success' ? 'status-success' : stats.status === 'failure' ? 'status-failure' : 'neutral';
+            const statusIcon = stats.status === 'success' ? '✅' : stats.status === 'failure' ? '❌' : '➖';
+
+            container.innerHTML = `
+                <div class="stat-card">
+                    <h3>Total Reviews</h3>
+                    <div class="value">${stats.total_reviews}</div>
+                    <div class="percentage">${productTitle}</div>
+                </div>
+                
+                <div class="stat-card positive">
+                    <h3>😊 Positive</h3>
+                    <div class="value">${stats.positive}</div>
+                    <div class="percentage">${stats.positive_percentage.toFixed(1)}%</div>
+                </div>
+                
+                <div class="stat-card negative">
+                    <h3>😞 Negative</h3>
+                    <div class="value">${stats.negative}</div>
+                    <div class="percentage">${stats.negative_percentage.toFixed(1)}%</div>
+                </div>
+                
+                <div class="stat-card neutral">
+                    <h3>😐 Neutral</h3>
+                    <div class="value">${stats.neutral}</div>
+                    <div class="percentage">${stats.neutral_percentage.toFixed(1)}%</div>
+                </div>
+                
+                <div class="stat-card ${statusClass}">
+                    <h3>Product Status</h3>
+                    <div class="value">${statusIcon}</div>
+                    <div class="status-badge ${stats.status}">${stats.status.toUpperCase()}</div>
+                </div>
+            `;
+        }
+
+        // Display reviews
+        function displayReviews(reviews) {
+            const grid = document.getElementById('reviewsGrid');
+
+            if (reviews.length === 0) {
+                grid.innerHTML = '<div class="no-data">No reviews found</div>';
+                return;
+            }
+
+            grid.innerHTML = reviews.map(review => {
+                const sentiment = review.predicted_sentiment || 'neutral';
+                const confidence = (review.confidence * 100).toFixed(1);
+                const stars = '⭐'.repeat(Math.floor(review.rating || 0));
+                const timestamp = review.timestamp ? new Date(review.timestamp).toLocaleString() : 'N/A';
+
+                return `
+                    <div class="review-card ${sentiment}">
+                        <div class="review-header">
+                            <h3>${review.product_name || 'Unknown Product'}</h3>
+                            <span class="sentiment-badge ${sentiment}">${sentiment}</span>
+                        </div>
+                        
+                        <div class="review-details">
+                            <div>
+                                <strong>Price:</strong>
+                                <span>₹${review.price || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <strong>Rating:</strong>
+                                <span class="star-rating">${stars} (${review.rating || 0}/5)</span>
+                            </div>
+                            <div>
+                                <strong>Timestamp:</strong>
+                                <span>${timestamp}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="review-summary">
+                            <strong>Summary:</strong> ${review.summary || 'No summary available'}
+                        </div>
+                        
+                        ${review.review ? `<div class="review-summary" style="font-style: normal; margin-top: 10px;">
+                            <strong>Full Review:</strong> ${review.review}
+                        </div>` : ''}
+                        
+                        <div class="confidence-bar">
+                            <div class="confidence-bar-label">Confidence: ${confidence}%</div>
+                            <div class="confidence-bar-fill">
+                                <div style="width: ${confidence}%"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Event listener for product selection
+        document.getElementById('productSelect').addEventListener('change', (e) => {
+            currentProduct = e.target.value;
+            const title = currentProduct ? `Reviews for ${currentProduct}` : 'Recent Reviews (All Products)';
+            document.getElementById('reviewsTitle').textContent = title;
+            loadReviews(currentProduct);
+        });
+
+        // Initial load
+        loadProducts();
+        loadReviews();
+
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadReviews(currentProduct);
+        }, 30000);
+    </script>
+</body>
+
+</html>
